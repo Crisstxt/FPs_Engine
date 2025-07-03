@@ -12,7 +12,7 @@ public class Jugador : MonoBehaviour
 
     void Start()
     {
-        sensibilidadRaton = ManagerEnigne.Instance.SensivilidadRaton;
+        sensibilidadRaton = ManagerEngine.Instance.SensivilidadRaton;
         controlador = GetComponent<CharacterController>();
     }
 
@@ -33,10 +33,10 @@ public class Jugador : MonoBehaviour
         float movimientoX = Input.GetAxis("Horizontal");
         float movimientoZ = Input.GetAxis("Vertical");
         Vector3 movimiento = transform.right * movimientoX + transform.forward * movimientoZ;
-        controlador.Move(movimiento);
+        controlador.Move(movimiento * ManagerEngine.Instance.VelocidadPersonajeCaminar * Time.deltaTime);
 
         if (controlador.isGrounded && velocidadJugador.y < 0) velocidadJugador.y = 0;
-        velocidadJugador.y += ManagerEnigne.Instance.Gravedad * Time.deltaTime;
+        velocidadJugador.y += ManagerEngine.Instance.Gravedad * Time.deltaTime;
         controlador.Move(velocidadJugador * Time.deltaTime); 
 
         if(Input.GetKeyDown(KeyCode.Space) && controlador.isGrounded)
@@ -47,17 +47,21 @@ public class Jugador : MonoBehaviour
 
     void Saltar()
     {
-        velocidadJugador.y = Mathf.Sqrt(ManagerEnigne.Instance.FuerzaSalto * -2f * ManagerEnigne.Instance.Gravedad);   
+        velocidadJugador.y = Mathf.Sqrt(ManagerEngine.Instance.FuerzaSalto * -2f * ManagerEngine.Instance.Gravedad);   
     }
 
     void ControlMouse()
     {
-        Vector2 mouseDelta = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
+        Vector2 mouseDelta = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * sensibilidadRaton;
 
         velocidadRotacion.x = Mathf.Lerp(velocidadRotacion.x, velocidadRotacion.x + mouseDelta.x, suavisado * Time.deltaTime);
         velocidadRotacion.y = Mathf.Lerp(velocidadRotacion.y, velocidadRotacion.y + mouseDelta.y, suavisado * Time.deltaTime);
 
-        limiteRotacionVertical = ManagerEnigne.Instance.LimiteRotacionVertical;
+        limiteRotacionVertical = ManagerEngine.Instance.LimiteRotacionVertical;
+        velocidadRotacion.y = Mathf.Clamp(velocidadRotacion.y, -limiteRotacionVertical, limiteRotacionVertical);
+
+        Camera.main.transform.localRotation = Quaternion.AngleAxis(-velocidadRotacion.y, Vector3.right);
+        transform.localRotation = Quaternion.AngleAxis(velocidadRotacion.x, Vector3.up);
 
     }
 
